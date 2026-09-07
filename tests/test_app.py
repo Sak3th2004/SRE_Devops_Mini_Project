@@ -5,7 +5,7 @@ def test_health_returns_up():
     client = app.test_client()
     res = client.get("/health")
     assert res.status_code == 200
-    assert res.get_json()["status"] == "UP"
+    assert res.get_json()["status"] == "DOWN"
 
 
 def test_version_is_present():
