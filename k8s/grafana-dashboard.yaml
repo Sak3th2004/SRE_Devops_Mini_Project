@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: student-11
+data:
+  system-health.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "links": [],
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Node exporter",
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "1": { "text": "UP", "color": "green" }, "0": { "text": "DOWN", "color": "red" } } }
+              ],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            { "expr": "up{job=\"node-exporter\"}", "refId": "A" }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "k3s / kube-state",
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "1": { "text": "UP", "color": "green" }, "0": { "text": "DOWN", "color": "red" } } }
+              ]
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none" },
+          "targets": [
+            { "expr": "up{job=\"kube-state-metrics\"}", "refId": "A" }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "CPU busy %",
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "decimals": 1,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+          "targets": [
+            { "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))", "refId": "A" }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Memory available %",
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "decimals": 1
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+          "targets": [
+            { "expr": "100 * node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes", "refId": "A" }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Node CPU (busy %)",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "unit": "percent", "custom": { "lineWidth": 2, "fillOpacity": 12 } },
+            "overrides": []
+          },
+          "targets": [
+            { "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))", "legendFormat": "cpu", "refId": "A" }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Load average",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "custom": { "lineWidth": 2, "fillOpacity": 10 } },
+            "overrides": []
+          },
+          "targets": [
+            { "expr": "node_load1", "legendFormat": "load1", "refId": "A" },
+            { "expr": "node_load5", "legendFormat": "load5", "refId": "B" }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Pods in student-11",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "expr": "kube_pod_status_phase{namespace=\"student-11\"}", "legendFormat": "{{pod}} {{phase}}", "refId": "A" }
+          ]
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["c456", "sre"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "C456 System Health",
+      "uid": "c456-health",
+      "version": 1
+    }
