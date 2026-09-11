@@ -67,3 +67,11 @@ def test_deps_shape():
     assert "prometheus" in body
     assert "jenkins" in body
     assert "api" in body
+
+
+def test_metrics_record_a_request():
+    client = app.test_client()
+    assert client.get("/health").status_code == 200
+    body = client.get("/metrics").data.decode()
+    assert "http_requests_total" in body
+    assert 'path="/health"' in body

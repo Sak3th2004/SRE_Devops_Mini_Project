@@ -18,9 +18,20 @@ kubeconfig*
 .DS_Store
 Thumbs.db
 *.pdf
+*.pptx
+~$*
+output/
+outputs/
+tmp/
 dist/
 build/
 .tools/
 uv.tgz
 gunicorn.pid
 image-tag.txt
+
+# local notes and reports — keep on disk, not on GitHub
+docs/demo.md
+docs/trainer-presentation.md
+docs/tasks.md
+docs/sandbox.md

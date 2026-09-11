@@ -1,7 +1,0 @@
-# extra scrape job for the health api
-# add this to prometheus.yml if you can edit the trainer host
-  - job_name: health-dashboard
-    metrics_path: /metrics
-    static_configs:
-      - targets:
-          - 10.0.1.220:30080

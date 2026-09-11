@@ -1,9 +1,8 @@
 # System Health Dashboard
-C456 SRE mini project
 
-Ops API plus the delivery path: Git, tests, Docker, Jenkins, Kubernetes, Prometheus, Grafana.
+C456 SRE mini project: health APIs plus Git, tests, Docker, Jenkins, Kubernetes, Prometheus and Grafana.
 
-PDF endpoints stay as specified. Extra routes cover SLO, dependencies and process info.
+`APP_ENV` is not hard-coded. Extra routes cover SLO, dependencies and process info.
 
 ## Endpoints
 
@@ -20,87 +19,60 @@ PDF endpoints stay as specified. Extra routes cover SLO, dependencies and proces
 | `GET /deps` | Prometheus + Jenkins probes |
 | `GET /events` | recent request samples |
 
-`APP_ENV` is not hard-coded.
-
 ## Layout
 
 ```
 app.py
-dashboard/
-  config.py
-  health.py      /health /version /environment /ready /metrics
-  ops.py         /info /slo /deps /events
-  ui.py
-  store.py
-  metrics.py
-tests/
+dashboard/             APIs, UI, metrics
+tests/test_app.py
+scripts/traffic.py     load against a running app
 Dockerfile
-Jenkinsfile
 docker-compose.yml     api + prometheus + grafana
-k8s/                   student-11
-monitoring/
-docs/
+Jenkinsfile
+k8s/                   student-11 (configmap, deployment, service)
+monitoring/            local Prometheus + Grafana
+docs/                  merge-conflict, PR review, SLO, reflection
 ```
 
-## Local (Docker Desktop)
+## Local
 
 ```
 docker compose up --build
 ```
 
-- App: http://127.0.0.1:5000
+- App: http://127.0.0.1:5000  (`APP_ENV=development`)
 - Grafana: http://127.0.0.1:3000  (admin / admin)
 - Local Prometheus: http://127.0.0.1:9091
-- Trainer Prometheus: http://43.205.104.60:9090
-
-Grafana has two datasources: local scrape of this API, and the class Prometheus for node/k8s.
-
-Without compose:
 
 ```
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-set APP_ENV=development
-python app.py
+python -m pytest -q
+python3 scripts/traffic.py --url http://127.0.0.1:5000 --seconds 60
 ```
 
-```
-pytest -q
-```
+The image is built on this machine. It is not pushed to a registry.
 
 ## Jenkins
 
-http://3.6.114.43:8080/
+http://3.6.114.43:8080/ job `system-health-platform-saketh`
 
-`Jenkinsfile` stages: Checkout → Install → Test → Build → Tag → Health check (also hits `/ready` `/slo` `/info`).
+Stages: Checkout → Install → Test → Build → Tag → Health check.
 
-Point a Pipeline job at this repo. Screenshot one failed run (break a test) and one green run.
+This agent has no Docker daemon, so Build/Tag fall back to a source archive. The pipeline does not push an image and does not deploy to Kubernetes.
 
 ## Kubernetes
 
-Namespace `student-11`. Do not delete `devbox`.
+Namespace `student-11`. One replica. ConfigMap sets `APP_ENV=production`.
 
 ```
-kubectl apply -n student-11 -f k8s/
+kubectl apply -f k8s/configmap.yaml -f k8s/deployment.yaml -f k8s/service.yaml
+kubectl -n student-11 port-forward svc/health-dashboard 5001:5000
 ```
 
-App image is `system-health-dashboard:1.0.0` (`IfNotPresent`). Grafana YAML is there if you want it in-cluster as well; Docker Desktop Grafana is enough for the demo.
+The pod uses `python:3.12-slim`, clones GitHub `main`, then runs gunicorn. Do not apply `k8s/grafana.yaml` on the cluster.
 
-```
-kubectl -n student-11 port-forward svc/health-dashboard 5000:5000
-```
+## Git
 
-## Git / PR
-
-`main`, `develop`, `feature/*`. Conflict notes: `docs/merge-conflict.md`.
-
-Open a PR develop → main and review it from a second GitHub account: `docs/pr-review.md`.
-
-## Other notes
-
-- SLO: `docs/slo.md`
-- Demo order: `docs/demo.md`
-- Sandbox URLs: `docs/sandbox.md`
-
-No kubeconfig, tokens or `.env` files in git.
+`main`, `develop`, `feature/*`. Conflict notes: `docs/merge-conflict.md`. PR review: `docs/pr-review.md`. SLO: `docs/slo.md`.
