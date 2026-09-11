@@ -12,7 +12,7 @@ C456 SRE mini project: health APIs plus Git, tests, Docker, Jenkins, Kubernetes,
 | `GET /health` | `{"status": "UP"}` |
 | `GET /version` | app version |
 | `GET /environment` | `APP_ENV` |
-| `GET /ready` | process check |
+| `GET /ready` | process plus Prometheus/Jenkins probes |
 | `GET /metrics` | Prometheus |
 | `GET /info` | uptime, host, version |
 | `GET /slo` | availability and error budget |
@@ -58,20 +58,24 @@ The image is built on this machine. It is not pushed to a registry.
 
 http://3.6.114.43:8080/ job `system-health-platform-saketh`
 
-Stages: Checkout → Install → Test → Build → Tag → Health check.
+Stages: Checkout → Install → Test → Build → Tag → Publish → Health check.
 
-This agent has no Docker daemon, so Build/Tag fall back to a source archive. The pipeline does not push an image and does not deploy to Kubernetes.
+This agent has no Docker daemon, so Build/Tag/Publish fall back and stay green. The pipeline does not push to a registry and does not deploy to Kubernetes. The cluster image is built on this laptop and loaded with `kind load`.
 
 ## Kubernetes
 
 Namespace `student-11`. One replica. ConfigMap sets `APP_ENV=production`.
 
+The pod runs image `system-health-dashboard:1.0.0` (no git clone). Load it into kind, then apply:
+
 ```
-kubectl apply -f k8s/configmap.yaml -f k8s/deployment.yaml -f k8s/service.yaml
-kubectl -n student-11 port-forward svc/health-dashboard 5001:5000
+bash scripts/release-k8s.sh
+kubectl --kubeconfig /tmp/sre-prep.kubeconfig -n student-11 port-forward svc/health-dashboard 5001:5000
 ```
 
-The pod uses `python:3.12-slim`, clones GitHub `main`, then runs gunicorn. Do not apply `k8s/grafana.yaml` on the cluster.
+Use the `kind-sre-prep` kubeconfig. Do not switch to context `default`. Do not apply `k8s/grafana.yaml`.
+
+Local Prometheus scrapes the Docker app and the kind NodePort (`sre-prep-control-plane:30080`).
 
 ## Git
 

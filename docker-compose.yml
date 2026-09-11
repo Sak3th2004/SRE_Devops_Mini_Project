@@ -14,6 +14,11 @@ services:
     image: prom/prometheus:v2.54.1
     ports:
       - "9091:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - kind
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
@@ -35,3 +40,8 @@ services:
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
+
+networks:
+  kind:
+    external: true
+    name: kind

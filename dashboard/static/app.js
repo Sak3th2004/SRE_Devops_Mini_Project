@@ -37,18 +37,23 @@ function uptimeText(sec) {
 
 async function refresh() {
   const results = await Promise.all(paths.map(ping));
-  const extra = await Promise.all(["/slo", "/info", "/deps"].map(ping));
+  const extra = await Promise.all(["/slo", "/info", "/deps", "/events"].map(ping));
   const slo = extra[0].json || {};
   const info = extra[1].json || {};
   const deps = extra[2].json || {};
+  const events = extra[3].json || {};
 
   document.getElementById("rows").innerHTML = results
     .map((r) => {
       const cls = r.ok ? "code-ok" : "code-bad";
+      const body = r.json && Object.keys(r.json).length
+        ? JSON.stringify(r.json)
+        : "—";
       return `<tr>
         <td>${r.path}</td>
         <td class="${cls}">${r.status || "err"}</td>
         <td>${fmt(r.ms)}</td>
+        <td class="json">${body}</td>
       </tr>`;
     })
     .join("");
@@ -74,10 +79,16 @@ async function refresh() {
   setText("live-label", up ? "live" : "down");
   if (info.uptime_seconds != null) setText("uptime", uptimeText(info.uptime_seconds));
   if (info.hostname) setText("host", info.hostname);
+  if (info.environment || info.hostname) {
+    setText("runtime", "instance " + (info.hostname || "unknown"));
+  }
 
   if (slo.availability_pct != null) {
     setText("slo-value", slo.availability_pct + "%");
-    setText("slo-hint", "target " + slo.target + "%");
+    const counts = (slo.good != null)
+      ? slo.good + " good / " + slo.bad + " bad · target " + slo.target + "%"
+      : "target " + slo.target + "%";
+    setText("slo-hint", counts);
     const left = slo.budget_remaining_pct;
     setText("budget-label", left + "% remaining");
     const bar = document.getElementById("budget-bar");
@@ -93,6 +104,19 @@ async function refresh() {
       return `<li><span>${names[key]}</span><span class="${ok ? "code-ok" : "code-bad"}">${ok ? "up" : "down"}</span></li>`;
     })
     .join("");
+
+  const items = Array.isArray(events.items) ? events.items.slice(0, 12) : [];
+  document.getElementById("events").innerHTML = items.length
+    ? items.map((item) => {
+        const cls = item.ok ? "code-ok" : "code-bad";
+        return `<tr>
+          <td>${item.ts || "—"}</td>
+          <td>${item.path || "—"}</td>
+          <td class="${cls}">${item.status || "err"}</td>
+          <td>${item.ms != null ? item.ms + " ms" : "—"}</td>
+        </tr>`;
+      }).join("")
+    : `<tr><td colspan="4">no requests recorded yet</td></tr>`;
 
   setText("clock", new Date().toLocaleTimeString());
 }

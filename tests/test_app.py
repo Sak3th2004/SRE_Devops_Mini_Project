@@ -30,7 +30,12 @@ def test_ready():
     client = app.test_client()
     res = client.get("/ready")
     assert res.status_code == 200
-    assert res.get_json()["status"] == "UP"
+    body = res.get_json()
+    assert body["ready"] is True
+    assert body["checks"]["process"]["ok"] is True
+    assert "prometheus" in body["checks"]
+    assert "jenkins" in body["checks"]
+    assert body["status"] in ("UP", "DEGRADED")
 
 
 def test_info():

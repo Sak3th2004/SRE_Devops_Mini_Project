@@ -1,26 +1,12 @@
 import platform
 import socket
-from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
 
 from flask import Blueprint, current_app, jsonify
 
 from dashboard import store
+from dashboard.probes import dependency_checks
 
 bp = Blueprint("ops", __name__)
-
-
-def _probe(url, timeout=2):
-    try:
-        with urlopen(url, timeout=timeout) as resp:
-            code = getattr(resp, "status", 200)
-            return {"ok": True, "status": code}
-    except HTTPError as err:
-        return {"ok": err.code < 500, "status": err.code}
-    except URLError as err:
-        return {"ok": False, "error": str(err.reason) if getattr(err, "reason", None) else str(err)}
-    except Exception as err:
-        return {"ok": False, "error": str(err)}
 
 
 @bp.get("/info")
@@ -46,12 +32,11 @@ def slo():
 
 @bp.get("/deps")
 def deps():
-    prom = current_app.config["PROMETHEUS_URL"].rstrip("/")
-    jenkins = current_app.config["JENKINS_URL"].rstrip("/")
+    checks = dependency_checks(current_app)
     return jsonify(
-        prometheus=_probe(prom + "/-/ready"),
-        jenkins=_probe(jenkins + "/login"),
-        api={"ok": True, "status": 200},
+        prometheus=checks["prometheus"],
+        jenkins=checks["jenkins"],
+        api=checks["api"],
     )
 
 

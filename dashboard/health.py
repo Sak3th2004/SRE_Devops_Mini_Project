@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, jsonify
 
 from dashboard.metrics import metrics_response
+from dashboard.probes import dependency_checks
 
 bp = Blueprint("health", __name__)
 
@@ -22,7 +23,16 @@ def environment():
 
 @bp.get("/ready")
 def ready():
-    return jsonify(status="UP", checks={"process": "ok"})
+    checks = dependency_checks(current_app)
+    process_ok = bool(checks.get("process", {}).get("ok"))
+    all_ok = all(bool(item.get("ok")) for item in checks.values())
+    payload = {
+        "status": "UP" if all_ok else "DEGRADED",
+        "ready": process_ok,
+        "checks": checks,
+    }
+    # Process up => HTTP 200 so Jenkins and kube probes do not fail when Jenkins/Prometheus lag.
+    return jsonify(payload), 200 if process_ok else 503
 
 
 @bp.get("/metrics")

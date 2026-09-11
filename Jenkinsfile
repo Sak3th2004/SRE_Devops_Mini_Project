@@ -73,6 +73,22 @@ pipeline {
             }
         }
 
+        stage('Publish') {
+            steps {
+                sh '''
+                    set -e
+                    if command -v docker >/dev/null 2>&1; then
+                      echo "no container registry on this agent"
+                      echo "image ${IMAGE}:1.0.${BUILD_NUMBER} stays local"
+                      docker images ${IMAGE} || true
+                    else
+                      echo "publish skipped: this Jenkins agent has no docker"
+                      echo "workstation path: docker build + kind load system-health-dashboard:1.0.0"
+                    fi
+                '''
+            }
+        }
+
         stage('Health check') {
             steps {
                 sh '''

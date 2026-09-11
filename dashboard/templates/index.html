@@ -30,6 +30,7 @@
         <p class="label">uptime</p>
         <p class="hero-side" id="uptime">—</p>
         <p class="muted" id="host">—</p>
+        <p class="muted" id="runtime">—</p>
       </div>
     </section>
 
@@ -87,13 +88,34 @@
               <th>Path</th>
               <th>HTTP</th>
               <th>Time</th>
+              <th>Body</th>
             </tr>
           </thead>
           <tbody id="rows">
-            <tr><td colspan="3">loading…</td></tr>
+            <tr><td colspan="4">loading…</td></tr>
           </tbody>
         </table>
       </section>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Recent requests</h2>
+        <span>GET /events</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Path</th>
+            <th>HTTP</th>
+            <th>Latency</th>
+          </tr>
+        </thead>
+        <tbody id="events">
+          <tr><td colspan="4">loading…</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <footer>

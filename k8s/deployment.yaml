@@ -17,20 +17,8 @@ spec:
     spec:
       containers:
         - name: api
-          image: python:3.12-slim
+          image: system-health-dashboard:1.0.0
           imagePullPolicy: IfNotPresent
-          workingDir: /app
-          command: ["sh", "-c"]
-          args:
-            - |
-              set -e
-              apt-get update
-              apt-get install -y --no-install-recommends git ca-certificates
-              rm -rf /app/*
-              git clone --depth 1 --branch main https://github.com/Sak3th2004/SRE_Devops_Mini_Project.git /tmp/src
-              cp -a /tmp/src/. /app/
-              pip install --no-cache-dir -r requirements.txt
-              exec gunicorn -b 0.0.0.0:5000 app:app
           ports:
             - containerPort: 5000
           envFrom:
@@ -40,13 +28,13 @@ spec:
             httpGet:
               path: /health
               port: 5000
-            initialDelaySeconds: 90
+            initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /health
               port: 5000
-            initialDelaySeconds: 120
+            initialDelaySeconds: 15
             periodSeconds: 20
           resources:
             requests:
