@@ -1,17 +1,8 @@
-from flask import Blueprint, current_app, jsonify, render_template
+from flask import Blueprint, current_app, jsonify
 
 from dashboard.metrics import metrics_response
 
-bp = Blueprint("main", __name__)
-
-
-@bp.get("/")
-def index():
-    return render_template(
-        "index.html",
-        environment=current_app.config["APP_ENV"],
-        version=current_app.config["APP_VERSION"],
-    )
+bp = Blueprint("health", __name__)
 
 
 @bp.get("/health")

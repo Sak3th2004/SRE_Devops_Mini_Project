@@ -3,6 +3,8 @@ import time
 from flask import request, Response
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 
+from dashboard import store
+
 REQUESTS = Counter(
     "http_requests_total",
     "HTTP requests",
@@ -20,6 +22,8 @@ APP_INFO = Gauge(
     ["version", "environment"],
 )
 
+SKIP_STORE = {"/metrics", "/static"}
+
 
 def setup_metrics(app):
     APP_UP.set(1)
@@ -35,11 +39,13 @@ def setup_metrics(app):
     @app.after_request
     def _record(resp):
         path = request.path
-        if path != "/metrics":
+        started = getattr(request, "_started", None)
+        ms = (time.time() - started) * 1000 if started is not None else 0
+        if not path.startswith("/static") and path != "/metrics":
             REQUESTS.labels(request.method, path, str(resp.status_code)).inc()
-            started = getattr(request, "_started", None)
             if started is not None:
-                LATENCY.labels(path).observe(time.time() - started)
+                LATENCY.labels(path).observe(ms / 1000.0)
+            store.record(path, 200 <= resp.status_code < 400, resp.status_code, ms)
         return resp
 
 

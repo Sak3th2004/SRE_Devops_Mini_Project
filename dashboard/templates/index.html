@@ -10,26 +10,34 @@
   <div class="shell">
     <header class="top">
       <div>
-        <p class="eyebrow">C456 operations</p>
         <h1>System Health Dashboard</h1>
+        <p class="sub">{{ namespace }} · slo {{ slo_target }}%</p>
       </div>
       <div class="top-right">
         <span class="pill" id="env-pill">{{ environment }}</span>
-        <span class="live"><i></i> live</span>
+        <span class="dot" id="live-dot"></span>
+        <span id="live-label">checking</span>
       </div>
     </header>
 
     <section class="hero">
-      <p class="hero-label">service status</p>
-      <p class="hero-status" id="hero-status">checking</p>
-      <p class="hero-meta" id="hero-meta">waiting for /health</p>
+      <div>
+        <p class="label">status</p>
+        <p class="hero-status" id="hero-status">—</p>
+        <p class="muted" id="hero-meta">waiting for /health</p>
+      </div>
+      <div>
+        <p class="label">uptime</p>
+        <p class="hero-side" id="uptime">—</p>
+        <p class="muted" id="host">—</p>
+      </div>
     </section>
 
     <section class="cards">
       <article class="card">
         <h2>Health</h2>
         <p class="value" id="health-value">—</p>
-        <p class="hint" id="health-hint">GET /health</p>
+        <p class="hint">GET /health</p>
       </article>
       <article class="card">
         <h2>Version</h2>
@@ -39,33 +47,58 @@
       <article class="card">
         <h2>Environment</h2>
         <p class="value" id="env-value">{{ environment }}</p>
-        <p class="hint">from APP_ENV</p>
+        <p class="hint">APP_ENV</p>
+      </article>
+      <article class="card">
+        <h2>Availability</h2>
+        <p class="value" id="slo-value">—</p>
+        <p class="hint" id="slo-hint">GET /slo</p>
       </article>
     </section>
 
     <section class="panel">
       <div class="panel-head">
-        <h2>Endpoint checks</h2>
-        <span id="clock">—</span>
+        <h2>Error budget</h2>
+        <span id="budget-label">—</span>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Path</th>
-            <th>HTTP</th>
-            <th>Time</th>
-            <th>Body</th>
-          </tr>
-        </thead>
-        <tbody id="rows">
-          <tr><td colspan="4">loading…</td></tr>
-        </tbody>
-      </table>
+      <div class="bar-wrap">
+        <div class="bar" id="budget-bar"></div>
+      </div>
+    </section>
+
+    <section class="split">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Dependencies</h2>
+          <span>GET /deps</span>
+        </div>
+        <ul class="deps" id="deps">
+          <li>loading…</li>
+        </ul>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Endpoint checks</h2>
+          <span id="clock">—</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>HTTP</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="3">loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
     </section>
 
     <footer>
-      <span>refresh every 5s</span>
-      <span>k8s namespace student-11</span>
+      <span>refresh 5s</span>
+      <span>prometheus + jenkins + k8s</span>
     </footer>
   </div>
   <script src="{{ url_for('static', filename='app.js') }}"></script>

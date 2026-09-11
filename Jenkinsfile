@@ -61,6 +61,9 @@ pipeline {
                       fi
                       sleep 2
                     done
+                    curl -fsS "http://${ip}:5000/ready"
+                    curl -fsS "http://${ip}:5000/slo"
+                    curl -fsS "http://${ip}:5000/info"
                     docker stop "$cid"
                 '''
             }

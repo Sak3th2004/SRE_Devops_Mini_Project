@@ -6,3 +6,32 @@ services:
     environment:
       APP_ENV: development
       APP_VERSION: "1.0.0"
+      SLO_TARGET: "99.5"
+      PROMETHEUS_URL: http://prometheus:9090
+      JENKINS_URL: http://3.6.114.43:8080
+      K8S_NAMESPACE: student-11
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+    depends_on:
+      - api
+  grafana:
+    image: grafana/grafana:11.1.5
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_DEFAULT_THEME: dark
+      GF_SERVER_ROOT_URL: http://localhost:3000
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
