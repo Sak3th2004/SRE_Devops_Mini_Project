@@ -17,9 +17,8 @@ pipeline {
         stage('Install') {
             steps {
                 sh '''
-                    python3 -m venv .venv
-                    . .venv/bin/activate
-                    pip install -r requirements.txt
+                    docker run --rm -v "$PWD":/app -w /app python:3.12-slim \
+                      sh -c "python -m venv .venv && .venv/bin/pip install -r requirements.txt"
                 '''
             }
         }
@@ -27,8 +26,8 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    . .venv/bin/activate
-                    pytest -q
+                    docker run --rm -v "$PWD":/app -w /app python:3.12-slim \
+                      sh -c ".venv/bin/pytest -q"
                 '''
             }
         }
