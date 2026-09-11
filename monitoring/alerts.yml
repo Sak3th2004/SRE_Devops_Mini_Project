@@ -1,0 +1,17 @@
+groups:
+  - name: health-dashboard
+    rules:
+      - alert: AppDown
+        expr: app_up == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: health dashboard process is down
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: ticket
+        annotations:
+          summary: more than 5 percent of requests are failing
