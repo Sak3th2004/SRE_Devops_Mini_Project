@@ -1,12 +1,13 @@
 # Task list
 
-- [x] Read the participant guide
-- [x] Health, version and environment endpoints
-- [x] Automated tests (pytest)
+- [x] PDF endpoints
+- [x] pytest
 - [x] Dockerfile
-- [x] Jenkinsfile stages
-- [x] k8s manifests in student-11
-- [x] Grafana in student-11 (trainer instance was down)
-- [ ] Jenkins job screenshot (green + failed test)
-- [ ] PR review on develop -> main
+- [x] Jenkinsfile
+- [x] k8s manifests
+- [x] extra ops APIs (info, slo, deps, events)
+- [x] Grafana + Prometheus via docker compose
+- [ ] Jenkins job screenshots
+- [ ] PR review from second GitHub account
+- [ ] kubectl apply in student-11
 - [ ] Five minute demo
